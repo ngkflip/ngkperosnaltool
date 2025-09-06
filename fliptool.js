@@ -654,8 +654,9 @@ $('closePreviewBtn').addEventListener('click', () => {
 </script>`;
   document.body.appendChild(container);
 
-  // === JS logic ===
-  /* helper */
+  // === JS logic (runs after injection) ===
+  (function(){
+/* helper */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ if(s===undefined||s===null) return ""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
@@ -1013,4 +1014,6 @@ $('closePreviewBtn').addEventListener('click', () => {
 });
 
 })();
+  })();
+
 })();
