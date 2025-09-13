@@ -764,11 +764,25 @@ body.appendChild(chip);
   const addInput = addRow.querySelector('input');
   const addBtn = addRow.querySelector('button');
 
-  saveBtn.addEventListener('click', ()=>{
-    // saving already automatic; show quick feedback
-    panel.animate([{transform:'scale(1)'},{transform:'scale(0.98)'},{transform:'scale(1)'}],{duration:160});
-    // persist is immediate via writePaletteLocal when changes occur
-  });
+saveBtn.addEventListener('click', ()=> {
+  // Overwrite the PALETTES <script> with updated JSON and download file
+  const palettesScript = `<script>\nconst PALETTES = ${JSON.stringify(PALETTES, null, 2)};\n<\/script>`;
+  const doc = document.documentElement.outerHTML;
+  const updatedHTML = doc.replace(/<script>\s*const PALETTES = [\s\S]*?<\/script>/, palettesScript);
+
+  const blob = new Blob([updatedHTML], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'flip_post_tool_updated.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // feedback animation
+  panel.animate([{transform:'scale(1)'},{transform:'scale(0.98)'},{transform:'scale(1)'}],{duration:160});
+});
 
   clearBtn.addEventListener('click', ()=>{
     if(!confirm(`Clear ${spec.title} palette?`)) return;
