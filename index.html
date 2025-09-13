@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
 <style>
   :root { --accent:#2ea44f; --danger:#dc3545; --muted:#b9bbbe; --panel:#2f3136; }
-  html,body{height:100%;margin:0;background:#0f0f11;font-family:Montserrat,Arial,sans-serif;color:#fff;}
+  html,body{height:100%;margin:0;background:transparent;font-family:Montserrat,Arial,sans-serif;color:#fff;}
   /* container adjusted to fit viewport while keeping your visuals */
   #flipToolContainer{
     position:fixed; top:24px; left:50%; transform:translateX(-50%);
@@ -608,8 +608,8 @@ function convertDiscordImgsToCodes(htmlString) {
 /* ---------------- floating palettes (3) ---------------- */
 const FLOATING_PALETTES = [
   { key: 'palette_eMoney', gif: 'https://media.giphy.com/media/U8ZZd3UbHWw6Qc0hzb/giphy.gif', color: '#2ea44f' },
-  { key: 'palette_resellingSecrets', gif: 'https://media.giphy.com/media/LD4EpMy6oXzG0lcbnL/giphy.gif', color: '#20c997' },
-  { key: 'palette_viralBricks', gif: 'https://media.giphy.com/media/xKyHBT3fiCel8mIO4P/giphy.gif', color: '#ff6b6b' }
+  { key: 'palette_viralBricks', gif: 'https://media.giphy.com/media/xKyHBT3fiCel8mIO4P/giphy.gif', color: '#007bff' },
+  { key: 'palette_resellingSecrets', gif: 'https://media.giphy.com/media/LD4EpMy6oXzG0lcbnL/giphy.gif', color: '#ffc107' }
 ];
 
 function readPaletteLocal(key) {
