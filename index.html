@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,24 +226,6 @@
   background: rgba(255,255,255,0.15); /* slightly brighter on hover */
 }
 
-/* Posting tool Export button style — matches header nav buttons but smaller */
-.controls .nav-btn {
-  font-weight:600;
-  font-size:13px;
-  padding:6px 12px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.12);
-  background: linear-gradient(135deg,var(--accent),#20c99720);
-  cursor:pointer;
-  color:#fff;
-  transition: all 0.2s ease;
-  margin:4px;
-}
-
-.controls .nav-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
 
 /* show move cursor on header for clarity */
 #toolHeader { cursor: move; user-select: none; }
@@ -334,8 +317,6 @@
 
 <div class="controls">
   <button id="clearBtn" class="nav-btn">Clear All</button>
-  <button id="exportHTMLBtn" class="nav-btn">Export</button>
-
 </div>
 
   </div>
@@ -764,52 +745,36 @@ body.appendChild(chip);
   const addInput = addRow.querySelector('input');
   const addBtn = addRow.querySelector('button');
 
-saveBtn.addEventListener('click', ()=> {
-  // Overwrite the PALETTES <script> with updated JSON and download file
-  const palettesScript = `<script>\nconst PALETTES = ${JSON.stringify(PALETTES, null, 2)};\n<\/script>`;
-  const doc = document.documentElement.outerHTML;
-  const updatedHTML = doc.replace(/<script>\s*const PALETTES = [\s\S]*?<\/script>/, palettesScript);
 
-  const blob = new Blob([updatedHTML], {type: 'text/html'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'flip_post_tool_updated.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+ 
 
-  // feedback animation
-  panel.animate([{transform:'scale(1)'},{transform:'scale(0.98)'},{transform:'scale(1)'}],{duration:160});
+saveBtn.addEventListener("click", async () => {
+  let emojis = Array.from(document.querySelectorAll(".emoji-chip"))
+    .map(el => el.textContent.trim());
+
+  if (emojis.length === 0) {
+    alert("No emojis to save.");
+    return;
+  }
+
+  await saveEmojisToGitHub(emojis);
+  alert("Emojis saved to GitHub!");
 });
 
-  clearBtn.addEventListener('click', ()=>{
-    if(!confirm(`Clear ${spec.title} palette?`)) return;
-    writePaletteLocal(spec.key, []);
-    render();
-  });
+clearBtn.addEventListener("click", () => {
+  if (!confirm("Clear inputs?")) return;
 
-  closeBtn.addEventListener('click', ()=> {
-    panel.style.display = 'none';
-  });
+  // reset posting tool inputs
+  $("productTitle").value = "";
+  $("storeLink").value = "";
+  $("retail").value = "";
+  $("resell").value = "";
+  $("ebayComps").value = "";
+  $("notes").innerHTML = "";
 
-  addBtn.addEventListener('click', ()=>{
-    const v = addInput.value.trim();
-    if(!v) return;
-    const arr = readPaletteLocal(spec.key);
-    // If user entered format "URL:alias" or "emoji:alias"
-    let emoji = v, alias = '';
-    const colonIndex = v.lastIndexOf(':');
-    if(colonIndex > 0 && !/^https?:\/\//.test(v)){
-      emoji = v.slice(0, colonIndex);
-      alias = v.slice(colonIndex+1);
-    }
-    arr.push({ emoji, alias });
-    writePaletteLocal(spec.key, arr);
-    addInput.value = '';
-    render();
-  });
+  // reset flip tool input
+  $("flipInput").value = "";
+});
 
   addInput.addEventListener('keydown', (e)=>{
     if(e.key === 'Enter'){ addBtn.click(); e.preventDefault(); }
@@ -987,25 +952,18 @@ document.addEventListener('selectionchange', updateAllFloatingPreviews);
 
 /* ---------------- Clear button behavior ---------------- */
 $('clearBtn').addEventListener('click', ()=>{
-  if(confirm('Clear all emojis and notes from the palette?')){
-    // clear floating palettes data but do not remove panels
-    FLOATING_PALETTES.forEach(p=> writePaletteLocal(p.key, []));
-    FLOATING_PALETTES.forEach(p=> {
-      const panel = document.getElementById(p.key);
-      if(panel){
-        // re-render body
-        panel.querySelectorAll('.pal-body, input').forEach(el=>el.remove());
-      }
-    });
-    // clear notes too
-    const notesDiv = document.getElementById('productNotes');
-    if(notesDiv){ notesDiv.innerHTML = ''; localStorage.removeItem('productNotes'); }
-    // refresh palettes (recreate)
-    FLOATING_PALETTES.forEach((p, idx)=> {
-      const panel = document.getElementById(p.key);
-      if(panel) panel.remove();
-      createPalettePanel(p, idx);
-    });
+  if(confirm('Clear all inputs?')){
+    // reset posting tool inputs
+    $('productTitle').value = "";
+    $('productLink').value = "";
+    $('retailInput').value = "";
+    $('resellInput').value = "";
+    $('compsLink').value = "";
+    $('productNotes').innerHTML = "";
+    localStorage.removeItem('productNotes');
+
+    // reset flip tool input
+    $('flipInput').value = "";
   }
 });
 
@@ -1029,32 +987,6 @@ window.addEventListener('load', ()=>{
       updateFloatingPreviewContent(n);
     }
   });
-});
-
-/* ---------------- keep everything else intact (no other structural changes) ---------------- */
-
-
-$('exportHTMLBtn').addEventListener('click', ()=> {
-  // Serialize the updated PALETTES object
-  const palettesScript = `<script>\nconst PALETTES = ${JSON.stringify(PALETTES, null, 2)};\n<\/script>`;
-
-  // Grab current HTML content
-  const doc = document.documentElement.outerHTML;
-
-  // Replace the old PALETTES definition with the new one
-  const updatedHTML = doc.replace(/<script>\s*const PALETTES = [\s\S]*?<\/script>/, palettesScript);
-
-  // Create a Blob and download
-  const blob = new Blob([updatedHTML], {type: 'text/html'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'flip_post_tool_updated.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  alert('Updated HTML downloaded. Open this file to retain changes.');
 });
 
 // Make the whole tool draggable by dragging the header (mouse + touch)
@@ -1128,5 +1060,6 @@ makeElementDraggable($('flipToolContainer'), $('toolHeader'));
 
 
 </script>
+<script src="githubSave.js"></script>
 </body>
 </html>
